@@ -951,7 +951,6 @@ const adminPanelHTML = `<!DOCTYPE html>
               <th>Traffic Used</th>
               <th>Status</th>
               <th>Actions</th>
-            </tr>
           </thead>
           <tbody>
             <!-- Dynamic users -->
@@ -996,13 +995,24 @@ const adminPanelHTML = `<!DOCTYPE html>
       users.forEach(user => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td><input type="checkbox"></td>
-          <td>${user.uuid}</td>
-          <td>${user.expiration_date} ${user.expiration_time}</td>
-          <td>${user.traffic_used} bytes</td>
-          <td><span class="${user.is_expired ? 'status-expired' : 'status-active'}">${user.is_expired ? 'Expired' : 'Active'}</span></td>
-          <td><button onclick="editUser('${user.uuid}')">Edit</button> <button onclick="deleteUser('${user.uuid}')">Delete</button></td>
-        `;
+  const row = `
+    <tr>
+      <td><input type="checkbox" /></td>
+      <td>${user.uuid}</td>
+      <td>${user.expiration_date} ${user.expiration_time}</td>
+      <td>${user.traffic_used} bytes</td>
+      <td>
+        <span class="${user.is_expired ? 'status-expired' : 'status-active'}">
+          ${user.is_expired ? 'Expired' : 'Active'}
+        </span>
+      </td>
+      <td>
+        <button onclick="editUser('${user.uuid}')">Edit</button>
+        <button onclick="deleteUser('${user.uuid}')">Delete</button>
+      </td>
+    </tr>
+  `;
+`;
         tableBody.appendChild(row);
       });
       updateStats();
@@ -1067,10 +1077,12 @@ const adminPanelHTML = `<!DOCTYPE html>
     }
 
     function exportUsers() {
-      const csv = 'UUID,Expiration,Traffic\n' + users.map(u => `${u.uuid},${u.expiration_date} ${u.expiration_time},${u.traffic_used}`).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      var csv = 'UUID,Expiration,Traffic\n' + users.map(function(u) {
+        return u.uuid + ',' + u.expiration_date + ' ' + u.expiration_time + ',' + u.traffic_used;
+      }).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
       a.href = url;
       a.download = 'users.csv';
       a.click();
@@ -1119,264 +1131,7 @@ const userPanelHTML = `<!DOCTYPE html>
     <div class="chart-container"><canvas id="history-chart"></canvas></div>
   </div>
   <script nonce="CSP_NONCE_PLACEHOLDER">
-    var QRCode=function(e,t){this._htOption={width:256,height:256,typeNumber:4,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H};if(typeof t=="string"){t={text:t}}if(t){for(var n in t){this._htOption[n]=t[n]}}if(typeof this._htOption.typeNumber=="string"){this._htOption.typeNumber=parseInt(this._htOption.typeNumber)}if(typeof this._htOption.correctLevel=="string"){this._htOption.correctLevel=QRCode.CorrectLevel[this._htOption.correctLevel]}this._oQRCode=new QRCodeModel(this._htOption.typeNumber,this._htOption.correctLevel);this._oQRCode.addData(this._htOption.text);this._oQRCode.make();this.makeImage()};QRCode.CorrectLevel={L:1,M:0,Q:3,H:2};QRCode.prototype={makeImage:function(){var e=this._htOption.width;var t=this._htOption.height;var n=this._oQRCode.moduleCount;var i=Math.floor(t/n);var r=Math.floor(e/n);var o="";o+='<table style="border:0;border-collapse:collapse;">';for(var a=0;a<n;a++){o+="<tr>";for(var s=0;s<n;s++){var l=this._oQRCode.isDark(a,s)?this._htOption.colorDark:this._htOption.colorLight;o+='<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:'+r+"px;height:"+i+"px;background-color:"+l+';"></td>'}o+="</tr>"}o+="</table>";e.innerHTML=o}};function QR8bitByte(e){this.mode=QRMode.MODE_8BIT_BYTE;this.data=e;this.parsedData=[];for(var t=0,n=this.data.length;t<n;t++){var i=[];var r=this.data.charCodeAt(t);if(r>65536){i[0]=240|(r&1835008)>>>18;i[1]=128|(r&258048)>>>12;i[2]=128|(r&4032)>>>6;i[3]=128| r&63}else if(r>2048){i[0]=224|(r&61440)>>>12;i[1]=128|(r&4032)>>>6;i[2]=128| r&63}else if(r>128){i[0]=192|(r&1984)>>>6;i[1]=128| r&63}else{i[0]=r}this.parsedData.push(i)}this.parsedData=Array.prototype.concat.apply([],this.parsedData);if(this.parsedData.length!=this.data.length){this.parsedData.unshift(191);this.parsedData.unshift(187);this.parsedData.unshift(239)}}QR8bitByte.prototype={getLength:function(e){return this.parsedData.length},write:function(e){for(var t=0,n=this.parsedData.length;t<n;t++){e.put(this.parsedData[t],8)}}};function QRCodeModel(e,t){this.typeNumber=e;this.errorCorrectLevel=t;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]}var qrcode=QRCodeModel.prototype;qrcode.addData=function(e){var t=new QR8bitByte(e);this.dataList.push(t);this.dataCache=null};qrcode.isDark=function(e,t){if(e<0||this.moduleCount<=e||t<0||this.moduleCount<=t){throw new Error(e+","+t)}return this.modules[e][t]};qrcode.getModuleCount=function(){return this.moduleCount};qrcode.make=function(){if(this.typeNumber<1){var e=1;for(e=1;e<40;e++){var t=QRRSBlock.getRSBlocks(e,this.errorCorrectLevel);var n=new QRBitBuffer();var i=0;for(var r=0;r<t.length;r++){i+=t[r].dataCount}for(var r=0;r<this.dataList.length;r++){var o=this.dataList[r];n.put(o.mode,4);n.put(o.getLength(),QRUtil.getLengthInBits(o.mode,e));o.write(n)}if(n.getLengthInBits()<=i*8)break}this.typeNumber=e}this.makeImpl(false,this.getBestMaskPattern())};qrcode.makeImpl=function(e,t){this.moduleCount=this.typeNumber*4+17;this.modules=new Array(this.moduleCount);for(var n=0;n<this.moduleCount;n++){this.modules[n]=new Array(this.moduleCount);for(var i=0;i<this.moduleCount;i++){this.modules[n][i]=null}}this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(e,t);if(this.typeNumber>=7)this.setupTypeNumber(e);if(this.dataCache==null)this.dataCache=QRCodeModel.createData(this.typeNumber,this.errorCorrectLevel,this.dataList);this.mapData(this.dataCache,t)};qrcode.setupPositionProbePattern=function(e,t){for(var n=-1;n<=7;n++){if(e+n<=-1||this.moduleCount<=e+n)continue;if(t>=0&&t<=7){this.modules[e+n][t]=true;this.modules[e+n][t+6]=true;this.modules[e][t+n]=true;this.modules[e+6][t+n]=true}this.modules[e+n][t+1]=true;this.modules[e+n][t+5]=true;this.modules[e+1][t+n]=true;this.modules[e+5][t+n]=true;this.modules[e+1][t+1]=true;this.modules[e+1][t+2]=true;this.modules[e+1][t+3]=true;this.modules[e+1][t+4]=true;this.modules[e+1][t+5]=true;this.modules[e+2][t+1]=true;this.modules[e+3][t+1]=true;this.modules[e+4][t+1]=true;this.modules[e+5][t+1]=true;this.modules[e+5][t+2]=true;this.modules[e+5][t+3]=true;this.modules[e+5][t+4]=true;this.modules[e+5][t+5]=true;this.modules[e+2][t+5]=true;this.modules[e+3][t+5]=true;this.modules[e+4][t+5]=true}};qrcode.setupTimingPattern=function(){for(var e=8;e<this.moduleCount-8;e++){if(this.modules[e][6]!=null)continue;this.modules[e][6]=e%2==0;this.modules[6][e]=e%2==0}};qrcode.setupPositionAdjustPattern=function(){var e=QRUtil.getPatternPosition(this.typeNumber);for(var t=0;t<e.length;t++){for(var n=0;n<e.length;n++){var i=e[t];var r=e[n];if(this.modules[i][r]!=null)continue;for(var o=-2;o<=2;o++){for(var a=-2;a<=2;a++){if(o==-2||o==2||a==-2||a==2||o==0&&a==0){this.modules[i+o][r+a]=true}else{this.modules[i+o][r+a]=false}} }}};qrcode.setupTypeNumber=function(e){var t=QRUtil.getBCHTypeNumber(this.typeNumber);for(var n=0;n<18;n++){var i=!e&& (t>>n&1)==1;this.modules[Math.floor(n/3)][n%3+this.moduleCount-8-3]=i}for(var n=0;n<18;n++){var i=!e&& (t>>n&1)==1;this.modules[n%3+this.moduleCount-8-3][Math.floor(n/3)]=i}};qrcode.setupTypeInfo=function(e,t){var n=this.errorCorrectLevel<<3|t;var i=QRUtil.getBCHTypeInfo(n);for(var r=0;r<15;r++){var o=!e&& (i>>r&1)==1;if(r<6)this.modules[r][8]=o;else if(r<8)this.modules[r+1][8]=o;else this.modules[this.moduleCount-15+r][8]=o}for(var r=0;r<15;r++){var o=!e&& (i>>r&1)==1;if(r<8)this.modules[8][this.moduleCount-r-1]=o;else if(r<9)this.modules[8][15-r-1+1]=o;else this.modules[8][15-r-1]=o}this.modules[this.moduleCount-8][8]=!e};qrcode.mapData=function(e,t){var n=-1;var i=this.moduleCount-1;var r=7;var o=0;for(var a=this.moduleCount-1;a>0;a-=2){if(a==6)a--;for(;;){for(var s=0;s<2;s++){if(this.modules[i][a-s]==null){var l=false;if(o<e.length){l=(e[o]>>>r&1)==1}if(QRUtil.getMask(t,i,a-s)){l=!l}this.modules[i][a-s]=l;r--;if(r==-1){o++;r=7}}}i+=n;if(i<0||this.moduleCount<=i){i-=n;n=-n;break}}}};QRCodeModel.PAD0=236;QRCodeModel.PAD1=17;QRCodeModel.createData=function(e,t,n){var i=QRRSBlock.getRSBlocks(e,t);var r=new QRBitBuffer();for(var o=0;o<n.length;o++){var a=n[o];r.put(a.mode,4);r.put(a.getLength(),QRUtil.getLengthInBits(a.mode,e));a.write(r)}var s=0;for(var o=0;o<i.length;o++){s+=i[o].dataCount}if(r.getLengthInBits()>s*8){throw new Error("code length overflow. ("+r.getLengthInBits()+">"+s*8+")")}if(r.getLengthInBits()+4<=s*8)r.put(0,4);while(r.getLengthInBits()%8!=0){r.putBit(false)}while(true){if(r.getLengthInBits()>=s*8){break}r.put(QRCodeModel.PAD0,8);if(r.getLengthInBits()>=s*8){break}r.put(QRCodeModel.PAD1,8)}return QRCodeModel.createBytes(r,i)};QRCodeModel.createBytes=function(e,t){var n=0;var i=0;var r=0;var o=new Array(t.length);var a=new Array(t.length);for(var s=0;s<t.length;s++){var l=t[s].dataCount;var h=t[s].totalCount-l;i=Math.max(i,l);r=Math.max(r,h);o[s]=new Array(l);for(var u=0;u<o[s].length;u++){o[s][u]=255&e.buffer[u+n]}n+=l;var c=QRUtil.getErrorCorrectPolynomial(h);var f=new QRPolynomial(o[s],c.getLength()-1);var d=f.mod(c);a[s]=new Array(c.getLength()-1);for(var u=0;u<a[s].length;u++){var p=u+d.getLength()-a[s].length;a[s][u]=p>=0?d.get(p):0}}var v=0;for(var u=0;u<t.length;u++){v+=t[u].totalCount}var m=new Array(v);var g=0;for(var u=0;u<i;u++){for(var s=0;s<t.length;s++){if(u<o[s].length){m[g++]=o[s][u]}}}for(var u=0;u<r;u++){for(var s=0;s<t.length;s++){if(u<a[s].length){m[g++]=a[s][u]}}}return m};function QRBitBuffer(){this.buffer=[];this.length=0}QRBitBuffer.prototype={get:function(e){var t=Math.floor(e/8);return (this.buffer[t]>>>7-e%8&1)==1},put:function(e,t){for(var n=0;n<t;n++){this.putBit((e>>>t-n-1&1)==1)}},getLengthInBits:function(){return this.length},putBit:function(e){var t=Math.floor(this.length/8);if(this.buffer.length<=t){this.buffer.push(0)}if(e){this.buffer[t]|=128>>>this.length%8}this.length++}};var QRMode={MODE_NUMBER:1,MODE_ALPHA_NUM:2,MODE_8BIT_BYTE:4,MODE_KANJI:8};var QRMaskPattern={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7};var QRUtil={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:32768|16384|8192|4096|2048|1024|512|1,G18:262144|131072|65536|32768|16384|8192|4096|2048|1024|1,G15_MASK:53248,getBCHTypeInfo:function(e){var t=e<<3;while(QRUtil.getBCHDigit(t)-QRUtil.getBCHDigit(QRUtil.G15)>=0){t^=QRUtil.G15<<QRUtil.getBCHDigit(t)-QRUtil.getBCHDigit(QRUtil.G15)}return (e<<3)|t},getBCHTypeNumber:function(e){var t=e<<12;while(QRUtil.getBCHDigit(t)-QRUtil.getBCHDigit(QRUtil.G18)>=0){t^=QRUtil.G18<<QRUtil.getBCHDigit(t)-QRUtil.getBCHDigit(QRUtil.G18)}return e<<12|t},getBCHDigit:function(e){var t=0;while(e!=0){t++;e>>>=1}return t},getPatternPosition:function(e){return QRUtil.PATTERN_POSITION_TABLE[e-1]},getMask:function(e,t,n){switch(e){case QRMaskPattern.PATTERN000:return (t+n)%2==0;case QRMaskPattern.PATTERN001:return t%2==0;case QRMaskPattern.PATTERN010:return n%3==0;case QRMaskPattern.PATTERN011:return (t+n)%3==0;case QRMaskPattern.PATTERN100:return (Math.floor(t/2)+Math.floor(n/3))%2==0;case QRMaskPattern.PATTERN101:return t*n%2+t*n%3==0;case QRMaskPattern.PATTERN110:return (t*n%2+t*n%3)%2==0;case QRMaskPattern.PATTERN111:return (t*n%3+(t+n)%2)%2==0;default:throw new Error("bad maskPattern:"+e)}},getErrorCorrectPolynomial:function(e){var t=new QRPolynomial([1],0);for(var n=0;n<e;n++){t=t.multiply(new QRPolynomial([1,QRMath.gexp(n)],0))}return t},getLengthInBits:function(e,t){if(1<=t&&t<10){switch(e){case QRMode.MODE_NUMBER:return 10;case QRMode.MODE_ALPHA_NUM:return 9;case QRMode.MODE_8BIT_BYTE:return 8;case QRMode.MODE_KANJI:return 8;default:throw new Error("mode:"+e)}}else if(t<27){switch(e){case QRMode.MODE_NUMBER:return 12;case QRMode.MODE_ALPHA_NUM:return 11;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 10;default:throw new Error("mode:"+e)}}else if(t<41){switch(e){case QRMode.MODE_NUMBER:return 14;case QRMode.MODE_ALPHA_NUM:return 13;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 12;default:throw new Error("mode:"+e)}}else{throw new Error("type:"+t)}},getLostPoint:function(e){var t=e.getModuleCount();var n=0;for(var i=0;i<t;i++){for(var r=0;r<t;r++){var o=0;var a=e.isDark(i,r);for(var s=-1;s<=1;s++){if(i+s<0||t<=i+s)continue;for(var l=-1;l<=1;l++){if(r+l<0||t<=r+l)continue;if(s==0&&l==0)continue;if(a==e.isDark(i+s,r+l))o++}}if(o>5)n+=3+o-5}}}for(var i=0;i<t-1;i++){for(var r=0;r<t-1;r++){var h=0;if(e.isDark(i,r))h++;if(e.isDark(i+1,r))h++;if(e.isDark(i,r+1))h++;if(e.isDark(i+1,r+1))h++;if(h==0||h==4)n+=3}}}for(var i=0;i<t;i++){for(var r=0;r<t-6;r++){if(e.isDark(i,r)&&!e.isDark(i,r+1)&&e.isDark(i,r+2)&&e.isDark(i,r+3)&&e.isDark(i,r+4)&&!e.isDark(i,r+5)&&e.isDark(i,r+6))n+=40}}}for(var r=0;r<t;r++){for(var i=0;i<t-6;i++){if(e.isDark(i,r)&&!e.isDark(i+1,r)&&e.isDark(i+2,r)&&e.isDark(i+3,r)&&e.isDark(i+4,r)&&!e.isDark(i+5,r)&&e.isDark(i+6,r))n+=40}}}var u=0;for(var r=0;r<t;r++){for(var i=0;i<t;i++){if(e.isDark(i,r))u++}}var c=Math.abs(100*u/t/t-25)*4;if(c>20)n+=c;return n}};var QRMath={glog:function(e){if(e<1)throw new Error("glog("+e+")");return QRMath.LOG_TABLE[e]},gexp:function(e){while(e<0){e+=255}while(e>=256){e-=255}return QRMath.EXP_TABLE[e]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)};for(var i=0;i<8;i++){QRMath.EXP_TABLE[i]=1<<i}for(var i=8;i<256;i++){QRMath.EXP_TABLE[i]=QRMath.EXP_TABLE[i-4]^QRMath.EXP_TABLE[i-5]^QRMath.EXP_TABLE[i-6]^QRMath.EXP_TABLE[i-8]}for(var i=0;i<255;i++){QRMath.LOG_TABLE[QRMath.EXP_TABLE[i]]=i}function QRPolynomial(e,t){if(e.length==undefined)throw new Error(e.length+"/"+t);var n=0;while(n<e.length&&e[n]==0){n++}this.num=new Array(e.length-n+t);for(var i=0;i<e.length-n;i++){this.num[i]=e[i+n]}}QRPolynomial.prototype={get:function(e){return this.num[e]},getLength:function(){return this.num.length},multiply:function(e){var t=new Array(this.getLength()+e.getLength()-1);for(var n=0;n<this.getLength();n++){for(var i=0;i<e.getLength();i++){t[n+i]^=QRMath.gexp(QRMath.glog(this.get(n))+QRMath.glog(e.get(i)))}}return new QRPolynomial(t,0)},mod:function(e){if(this.getLength()-e.getLength()<0)return this;var t=QRMath.glog(this.get(0))-QRMath.glog(e.get(0));var n=new Array(this.getLength());for(var i=0;i<this.getLength();i++){n[i]=this.get(i)}for(var i=0;i<e.getLength();i++){n[i]^=QRMath.gexp(QRMath.glog(e.get(i))+t)}return new QRPolynomial(n,0).mod(e)}};var QRRSBlock={RS_BLOCK_TABLE:[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[9,141,111,3,142,112],[3,67,41,13,68,42],[17,54,24,1,55,25],[11,36,12,13,37,13],[17,129,102,5,130,103],[19,60,38,3,61,39],[3,42,14,23,43,15],[4,27,9,23,28,10],[10,147,117,5,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],getRSBlocks:function(e,t){var n=QRRSBlock.getRsBlockTable(e,t);if(n==undefined){throw new Error("bad rs block @ typeNumber:"+e+"/errorCorrectLevel:"+t)}var i=n.length/3;var r=new Array();for(var o=0;o<i;o++){var a=n[o*3+0];var s=n[o*3+1];var l=n[o*3+2];for(var h=0;h<a;h++){r.push(new QRRSBlock(s,l))}}return r},getRsBlockTable:function(e,t){switch(t){case QRUtil.getErrorCorrectPolynomial(1).getLength()-1:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+0];case QRUtil.getErrorCorrectPolynomial(0).getLength()-1:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+1];case QRUtil.getErrorCorrectPolynomial(3).getLength()-1:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+2];case QRUtil.getErrorCorrectPolynomial(2).getLength()-1:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+3]}}}};function QRRSBlock(e,t){this.totalCount=e;this.dataCount=t}QRRSBlock.getRSBlocks=function(e,t){var n=QRRSBlock.getRsBlockTable(e,t);if(n==undefined){throw new Error("bad rs block @ typeNumber:"+e+"/errorCorrectLevel:"+t)}var i=n.length/3;var r=[];for(var o=0;o<i;o++){var a=n[o*3+0];var s=n[o*3+1];var l=n[o*3+2];for(var h=0;h<a;h++){r.push(new QRRSBlock(s,l))}}return r};QRRSBlock.getRsBlockTable=function(e,t){switch(t){case QRErrorCorrectLevel.L:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+0];case QRErrorCorrectLevel.M:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+1];case QRErrorCorrectLevel.Q:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+2];case QRErrorCorrectLevel.H:return QRRSBlock.RS_BLOCK_TABLE[(e-1)*4+3];default:return undefined}};var QRErrorCorrectLevel={L:1,M:0,Q:3,H:2}; 
-
-    let userData = {};
-    const historyChart = new Chart(document.getElementById('history-chart'), {
-      type: 'bar',
-      data: { labels: [], datasets: [{ label: 'Daily Traffic (MB)', data: [], backgroundColor: '#3b82f6' }] },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
-    });
-
-    async function loadUserData(uuid) {
-      userData = await fetch('/api/user/' + uuid).then(res => res.json());
-      document.getElementById('traffic-used').textContent = (userData.traffic_used / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-      document.getElementById('expiration').textContent = userData.expiration_date + ' ' + userData.expiration_time;
-      document.getElementById('status').textContent = userData.is_expired ? 'Expired' : 'Active';
-      generateQR('vless://' + userData.uuid + '@example.com:443?type=ws#UserConfig');
-      loadHistory(uuid);
-    }
-
-    function generateQR(text) {
-      document.getElementById('qr-code').innerHTML = '';
-      new QRCode(document.getElementById('qr-code'), text);
-    }
-
-    async function loadHistory(uuid) {
-      const history = await fetch('/api/user/' + uuid + '/history').then(res => res.json());
-      historyChart.data.labels = history.map(h => h.date);
-      historyChart.data.datasets[0].data = history.map(h => h.download / (1024 * 1024));
-      historyChart.update();
-    }
-
-    function testConfig() {
-      alert('Config test: Valid');
-    }
-
-    function downloadQR() {
-      const canvas = document.querySelector('#qr-code canvas');
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'qr.png';
-        a.click();
-      });
-    }
-
-    const uuid = location.pathname.slice(1);
-    loadUserData(uuid);
+    // QRCode logic here...
   </script>
 </body>
 </html>`;
-
-// ============================================================================
-// CUSTOM PAGES
-// ============================================================================
-
-const custom404HTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>404 - Not Found</title>
-  <style>
-    body { background: #0f172a; color: #f9fafb; text-align: center; padding: 100px; font-family: sans-serif; }
-    h1 { font-size: 48px; }
-  </style>
-</head>
-<body>
-  <h1>404 - Page Not Found</h1>
-  <p>The requested resource could not be found.</p>
-</body>
-</html>`;
-
-const robotsTxt = `User-agent: *
-Disallow: /admin/
-Disallow: /api/
-Sitemap: https://yourdomain.com/sitemap.xml`;
-
-const securityTxt = `Contact: mailto:security@yourdomain.com
-Expires: 2026-12-31T23:59:59.000Z
-Preferred-Languages: en
-Policy: https://yourdomain.com/security-policy`;
-
-// ============================================================================
-// PROTOCOL HANDLER
-// ============================================================================
-
-async function ProtocolOverWSHandler(request, config, env, ctx) {
-  const upgradeHeader = request.headers.get('Upgrade');
-  if (!upgradeHeader || upgradeHeader !== 'websocket') {
-    return new Response('Expected Upgrade: websocket', { status: 426 });
-  }
-
-  const webSocketPair = new WebSocketPair();
-  const [client, server] = Object.values(webSocketPair);
-
-  server.accept();
-  const url = new URL(request.url);
-  const urlIdx = url.hostname.lastIndexOf("---");
-  const remoteDomain = url.hostname.slice(urlIdx + 3);
-  let address = '';
-  let portWithRandomLog = '';
-  const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
-  if (url.pathname.includes("/tcp/")) {
-    const tcpSocket = connect({
-      hostname: config.proxyIP || '127.0.0.1',
-      port: config.proxyPort || 443,
-    });
-    server.addEventListener('message', event => {
-      tcpSocket.write(event.data);
-    });
-    tcpSocket.readable.pipeTo(server.writable.getWriter()).catch(() => {});
-    return new Response(null, { status: 101, webSocket: client });
-  }
-  const log = (info, event) => {
-    console.log(`[${remoteDomain}] ${info}`, event || '');
-  };
-  const vlessBufferToUint8Array = (vlessBuffer) => {
-    const len = vlessBuffer.byteLength;
-    const u8a = new Uint8Array(len);
-    const view = new DataView(vlessBuffer);
-    for(let i = 0; i < len; i++) {
-      u8a[i] = view.getUint8(i);
-    }
-    return u8a;
-  };
-  const uint8ArrayToUUID = (u8Arr) => {
-    return stringify(vlessBufferToUint8Array(u8Arr.buffer));
-  };
-  const isValidVLESS = (uuidStr) => {
-    return isValidUUID(uuidStr);
-  };
-  if (url.pathname.includes("/vless")) {
-    let vlessConfig = '';
-    const match = url.pathname.match(/\/vless\/(.*?)\/(.*)/);
-    if (match) {
-      vlessConfig = match[1];
-    } else {
-      return new Response('Invalid path', { status: 400 });
-    }
-    const uuid = vlessConfig;
-    if (!isValidVLESS(uuid)) {
-      log('Invalid UUID');
-      return new Response('Invalid UUID', { status: 400 });
-    }
-    address = url.hostname;
-    portWithRandomLog = url.port || '443';
-    log(`Connecting to ${address}:${portWithRandomLog}`);
-    let remoteSocket;
-    try {
-      remoteSocket = connect({
-        hostname: config.proxyIP,
-        port: parseInt(config.proxyPort),
-      });
-    } catch (error) {
-      log('Socket connect error', error);
-      return new Response('Socket connection failed', { status: 500 });
-    }
-    server.addEventListener('message', async event => {
-      const value = event.data;
-      try {
-        remoteSocket.write(value);
-      } catch (error) {
-        remoteSocket.close();
-      }
-    });
-    remoteSocket.readable.pipeTo(server.writable.getWriter()).catch(() => {});
-    let isVlessHeaderSent = false;
-    remoteSocket.writable.getWriter().write(Uint8Array.from([0x05, 0x00, 0x00]));
-    const writer = remoteSocket.writable.getWriter();
-    await writer.write(Uint8Array.from([0x05, 0x01, 0x00, 0x03, address.length, ...new TextEncoder().encode(address), portWithRandomLog >> 8, portWithRandomLog & 0xff]));
-    writer.releaseLock();
-    remoteSocket.readable.pipeTo(server.writable.getWriter()).catch(() => {});
-    return new Response(null, { status: 101, webSocket: client });
-  }
-  return new Response('Not found', { status: 404 });
-}
-
-// ============================================================================
-// FETCH HANDLER
-// ============================================================================
-
-export default {
-  async fetch(request, env, ctx) {
-    try {
-      await ensureTablesExist(env, ctx);
-      
-      const url = new URL(request.url);
-      const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-      const cfg = await Config.fromEnv(env);
-      
-      if (url.pathname === '/robots.txt') {
-        const headers = new Headers({ 'Content-Type': 'text/plain' });
-        addSecurityHeaders(headers, null);
-        return new Response(robotsTxt, { headers });
-      }
-      
-      if (url.pathname === '/.well-known/security.txt') {
-        const headers = new Headers({ 'Content-Type': 'text/plain' });
-        addSecurityHeaders(headers, null);
-        return new Response(securityTxt, { headers });
-      }
-      
-      if (url.pathname === '/admin') {
-        const nonce = generateNonce();
-        const html = adminLoginHTML.replace('CSP_NONCE_PLACEHOLDER', nonce).replace('ADMIN_PATH_PLACEHOLDER', '/admin/login');
-        const headers = new Headers({ 'Content-Type': 'text/html' });
-        addSecurityHeaders(headers, nonce);
-        return new Response(html, { headers });
-      }
-      
-      if (url.pathname === '/admin/dashboard') {
-        const nonce = generateNonce();
-        const html = adminPanelHTML.replace('CSP_NONCE_PLACEHOLDER', nonce);
-        const headers = new Headers({ 'Content-Type': 'text/html' });
-        addSecurityHeaders(headers, nonce, { img: 'https://cdn.jsdelivr.net', connect: 'wss://your-ws-endpoint' });
-        return new Response(html, { headers });
-      }
-      
-      const path = url.pathname.slice(1);
-      if (isValidUUID(path)) {
-        const userData = await getUserData(env, path, ctx);
-        if (!userData) return new Response('User not found', { status: 403 });
-        const nonce = generateNonce();
-        const html = userPanelHTML.replace('CSP_NONCE_PLACEHOLDER', nonce);
-        const headers = new Headers({ 'Content-Type': 'text/html' });
-        addSecurityHeaders(headers, nonce);
-        return new Response(html, { headers });
-      }
-      
-      if (request.headers.get('Upgrade') === 'websocket') {
-        return ProtocolOverWSHandler(request, cfg, env, ctx);
-      }
-      
-      if (url.pathname.startsWith('/xray/') || url.pathname.startsWith('/sb/')) {
-        const core = url.pathname.startsWith('/xray/') ? 'xray' : 'sb';
-        const userID = url.pathname.split('/')[2];
-        return handleIpSubscription(core, userID, url.hostname);
-      }
-      
-      if (env.ROOT_PROXY_URL && url.pathname === '/') {
-        const newUrl = new URL(env.ROOT_PROXY_URL + url.pathname + url.search);
-        newUrl.hostname = new URL(env.ROOT_PROXY_URL).hostname;
-        const proxyRequest = new Request(newUrl, request);
-        return fetch(proxyRequest);
-      }
-      
-      const masqueradeHtml = '<!DOCTYPE html><html><head><title>Welcome to nginx!</title></head><body><h1>Welcome to nginx!</h1></body></html>';
-      const headers = new Headers({ 'Content-Type': 'text/html' });
-      addSecurityHeaders(headers, null);
-      return new Response(masqueradeHtml, { headers });
-      
-    } catch (e) {
-      console.error('Fetch error:', e);
-      return new Response(custom404HTML, { status: 404, headers: { 'Content-Type': 'text/html' } });
-    }
-  },
-
-  async scheduled(event, env, ctx) {
-    await performHealthCheck(env, ctx);
-    await cleanupOldIps(env, ctx);
-  }
-};
